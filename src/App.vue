@@ -1,47 +1,68 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+<script>
+import TaskInput from './components/TaskInput.vue'
+import TaskList from './components/TaskList.vue'
+
+export default {
+    components: { TaskInput, TaskList },
+    data() {
+        return {
+            tasks: [
+                { title: 'Прочитать главу из книги', priority: 'lo', done: false },
+                { title: 'Отправить отчёт по проекту', priority: 'hi', done: false },
+                { title: 'Созвониться с Аней', priority: 'md', done: false },
+                { title: 'Купить кофе', priority: 'lo', done: true },
+            ],
+            filter: 'all',
+        }
+    },
+    computed: {
+        filteredTasks() {
+            if (this.filter === 'all') return this.tasks
+            if (this.filter === 'active') return this.tasks.filter(t => !t.done)
+            if (this.filter === 'done') return this.tasks.filter(t => t.done)
+            return this.tasks
+        },
+    },
+    methods: {
+        addTask(task) {
+            this.tasks.push({ title: task.title, priority: task.priority, done: false })
+        },
+        toggleTask(task) { task.done = !task.done },
+        removeTask(task) {
+            const i = this.tasks.indexOf(task)
+            if (i !== -1) this.tasks.splice(i, 1)
+        },
+    },
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+    <div class="container py-4" style="max-width: 600px;">
+        <h1 class="h4 mb-3 border-bottom pb-2">Список задач</h1>
+        <div class="card">
+            <div class="card-body">
+                <task-input @add-task="addTask"></task-input>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+                <div class="btn-group btn-group-sm mb-3" role="group">
+                    <button type="button"
+                        class="btn"
+                        :class="filter === 'all' ? 'btn-primary' : 'btn-outline-primary'"
+                        @click="filter = 'all'">Все</button>
+                    <button type="button"
+                        class="btn"
+                        :class="filter === 'active' ? 'btn-primary' : 'btn-outline-primary'"
+                        @click="filter = 'active'">Активные</button>
+                    <button type="button"
+                        class="btn"
+                        :class="filter === 'done' ? 'btn-primary' : 'btn-outline-primary'"
+                        @click="filter = 'done'">Готовые</button>
+                </div>
+
+                <task-list :tasks="filteredTasks" @toggle="toggleTask" @remove="removeTask"></task-list>
+            </div>
+            <div class="card-footer text-muted small">
+                Всего: {{ tasks.length }} · Готово: {{ tasks.filter(t => t.done).length }}
+            </div>
+        </div>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
